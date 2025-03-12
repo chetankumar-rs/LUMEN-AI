@@ -10,9 +10,16 @@ export default function Home(){
 
 
 function Navbar(){
-const navigate = useNavigate();
+
+    const navigate = useNavigate();
 const handleLoginClick = () => {
     navigate('/login');
+}
+
+function handleRegister(){
+
+navigate('/signup');
+
 }
 return(<div className='flex justify-between items-center p-4 bg-blue-500 text-white'>
     <div className='text-2xl font-bold'>
@@ -28,7 +35,7 @@ return(<div className='flex justify-between items-center p-4 bg-blue-500 text-wh
 
     <div>
       <button className='bg-white text-blue-500 px-4 py-2 rounded-lg' onClick={handleLoginClick}>Login</button>
-      <button className='bg-white text-blue-500 px-4 py-2 rounded-lg'>Register</button>
+      <button className='bg-white text-blue-500 px-4 py-2 rounded-lg' onClick={handleRegister}>Register</button>
     </div>
     </div>)
 }
