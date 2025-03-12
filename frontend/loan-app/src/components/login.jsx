@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate, Link} from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,8 +18,17 @@ const Login = () => {
       setError('Invalid credentials');
     }
   };
+  function handleSignupClick(){
+    const navigate = useNavigate();
+    navigate('/signup');
+  }
 
   return (
+    
+
+    // <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    //   <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
@@ -45,9 +55,12 @@ const Login = () => {
             />
           </div>
           <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600" type="submit">
-            Login
+            sign in
           </button>
         </form>
+        <Link to = "/signup">
+          <h3 className="m-2 text-blue-500 text-center underline  " onClick= {handleSignupClick} >sign up</h3>
+        </Link>
       </div>
     </div>
   );
