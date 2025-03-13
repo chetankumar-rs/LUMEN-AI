@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 function Navbar() {
   const navigate = useNavigate();
@@ -38,18 +40,18 @@ function Navbar() {
         <div className="text-3xl font-extrabold tracking-wide animate-pulse cursor-pointer" onClick={() => navigate("/")}>
           LUMEN
         </div>
-        <span className="hidden md:inline text-sm font-light">Loan Understanding & Management Expert Navigator</span>
+       
       </div>
       
       {/* Middle: Navigation */}
-      <div className="hidden md:flex space-x-6">
-        <button className="hover:text-blue-300 transition-colors duration-200" onClick={() => document.getElementById("features").scrollIntoView({ behavior: 'smooth' })}>
+      <div className="hidden md:flex  transform translate-x-4 space-x-6">
+        <button className="hover:text-blue-300 border rounded-full px-4 py-2 transition-colors duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("features").scrollIntoView({ behavior: 'smooth' })}>
           Features
         </button>
-        <button className="hover:text-blue-300 transition-colors duration-200" onClick={() => document.getElementById("loan-checker").scrollIntoView({ behavior: 'smooth' })}>
+        <button className="hover:text-blue-300  px-4 py-2  border rounded-full transition-colors duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("loan-checker").scrollIntoView({ behavior: 'smooth' })}>
           Loan Checker
         </button>
-        <button className="hover:text-blue-300 transition-colors duration-200" onClick={() => document.getElementById("about").scrollIntoView({ behavior: 'smooth' })}>
+        <button className="hover:text-blue-300  px-4 py-2   border rounded-full transition-colors duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("about").scrollIntoView({ behavior: 'smooth' })}>
           About
         </button>
       </div>
@@ -73,6 +75,33 @@ function Navbar() {
   );
 }
 
+function Outlet() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      transition={{ duration: 1 }}
+      className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-700 text-white"
+    >
+      <h1 className="text-5xl font-extrabold mb-4">Welcome to Lumen</h1>
+      <p className="text-lg mb-6">Your personalized financial assistant</p>
+      <motion.button 
+        whileHover={{ scale: 1.1 }} 
+        whileTap={{ scale: 0.9 }}
+        className="bg-white text-blue-600 px-6 py-3 rounded-full shadow-lg text-lg font-semibold"
+      >
+        Get Started
+      </motion.button>
+    </motion.div>
+  );
+}
+
+
+
+
+
+
+
 function HeroSection() {
   const navigate = useNavigate();
   
@@ -80,9 +109,11 @@ function HeroSection() {
     <div className="flex flex-col md:flex-row items-center justify-between px-8 md:px-16 py-24 mt-16">
       {/* Left Text Content */}
       <div className="max-w-xl mb-10 md:mb-0">
+     
         <h1 className="text-4xl md:text-6xl font-bold text-blue-800 mb-4">
-          Simplify Your <span className="text-purple-600">Financial Journey</span>
-        </h1>
+        Loan Understanding <span className="text-purple-600"> & Management Expert Navigator</span>
+        </h1><br/>
+        <span className="hidden md:inline text-lg  font-bold">Simplify Your  Financial Journey </span>
         <p className="text-lg text-gray-700 mb-8">
           LUMEN helps you navigate loan options, check eligibility, and make informed financial decisions with 
           AI-powered guidance in your preferred language.

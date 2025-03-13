@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "../components/card";
-import { Button } from "../components/button";
-import { Progress } from "../components/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "./loancheckercomponents/card";
+import { Progress } from "./loancheckercomponents/progress";
+ 
+ 
 
 const questions = [
   {
@@ -195,7 +196,7 @@ export default function LoanChecker() {
                       Next
                     </Button>
                   ) : (
-                    <Button 
+                    <Button
                       disabled={!isFormComplete}
                       onClick={handleSubmit}
                       className="bg-green-600 hover:bg-green-700"

@@ -4,7 +4,8 @@ import { Route, Routes } from 'react-router-dom'
 import Login from './components/login'
 import Home from './components/Home'
 import Signup from './components/signup'
-import LoanChecker from './components/LoanChecker'
+import LoanChecker from './components/features/LoanChecker'
+import Welcome from './components/welcome'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -12,9 +13,9 @@ function App() {
   return (
     <><div className='bg-blue-200'>
        <Routes>
-
+       <Route path='/' element={<Welcome/>}/>
         <Route path='/login' element={<Login/>}/>
-        <Route path='/' element={<Home/>}/>
+        <Route path='/home' element={<Home/>}/>
         <Route path='/signup' element={<Signup/>}/>
         <Route path='/LoanChecker' element={<LoanChecker/>}/>
         
