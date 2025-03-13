@@ -19,11 +19,7 @@ const SelectField = ({ label, name, value, onChange }) => (
         </select>
     </div>
 );
-const colorClasses = {
-    blue: "bg-blue-500",
-    red: "bg-red-500",
-    // other colors as needed
-  };
+
 const Button = ({ onClick, text, color }) => (
     <button onClick={onClick} className={`bg-${color}-500 text-white p-2 rounded w-full`}>{text}</button>
 );
@@ -34,6 +30,28 @@ const AlertBox = ({ message }) => (
     </div>
 );
 
+// 🔹 AI Response Formatting Component
+const AIResponseBox = ({ response }) => {
+    if (!response) return null;
+
+    const formattedResponse = response.split("**").map((item, index, arr) => {
+        if (index % 2 === 1) {
+            return (
+                <li key={index}>
+                    <strong>{item}:</strong> {arr[index + 1]}
+                </li>
+            );
+        }
+        return null;
+    }).filter(Boolean);
+
+    return (
+        <div className="mt-4 p-3 bg-gray-100 border-l-4 border-gray-600 text-gray-800 rounded">
+            <ul className="list-disc pl-4">{formattedResponse}</ul>
+        </div>
+    );
+};
+
 const LoanGuidance = () => {
     const [userInput, setUserInput] = useState({
         income: '',
@@ -41,10 +59,10 @@ const LoanGuidance = () => {
         loanAmount: '',
         loanPurpose: ''
     });
-    
+
     const [recommendation, setRecommendation] = useState('');
     const [error, setError] = useState('');
-    
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setUserInput(prev => ({
@@ -52,38 +70,13 @@ const LoanGuidance = () => {
             [name]: value
         }));
     };
-    
-    const analyzeLoanEligibility = () => {
-        const { income, creditScore, loanAmount } = userInput;
-        const monthlyIncome = parseFloat(income);
-        const score = parseInt(creditScore);
-        const amount = parseFloat(loanAmount);
 
-        if (isNaN(monthlyIncome) || isNaN(score) || isNaN(amount) || monthlyIncome <= 0 || amount <= 0 || score < 300 || score > 850) {
-            setError("Please enter valid values for all fields.");
-            setRecommendation('');
-            return;
-        }
-        setError('');
-
-        let message = '';
-        if (score >= 750 && monthlyIncome * 0.5 >= amount / 36) {
-            message = "✅ Excellent! High chance of loan approval.";
-        } else if (score >= 650 && monthlyIncome * 0.4 >= amount / 36) {
-            message = "🟡 Good potential, but improving your credit score will help.";
-        } else {
-            message = "❌ Approval might be difficult. Consider improving your credit score or reducing the loan amount.";
-        }
-
-        setRecommendation(message);
-    };
-    
     const resetForm = () => {
         setUserInput({ income: '', creditScore: '', loanAmount: '', loanPurpose: '' });
         setRecommendation('');
         setError('');
     };
-    
+
     return (
         <div>
             <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
@@ -96,50 +89,58 @@ const LoanGuidance = () => {
                     <SelectField label="Loan Purpose" name="loanPurpose" value={userInput.loanPurpose} onChange={handleInputChange} />
                 </div>
                 <div className="flex justify-between mt-6">
-                    <Button onClick={analyzeLoanEligibility} text="Get Loan Guidance" color="blue" />
+                    <Button text="Get Loan Guidance" color="blue" />
                     <Button onClick={resetForm} text="Reset" color="red" />
                 </div>
-                {recommendation && <AlertBox message={recommendation} />}
+                <AIResponseBox response={recommendation} />
             </div>
-            <ChatBot userInput={userInput} />
+            <ChatBot userInput={userInput} setRecommendation={setRecommendation} />
         </div>
     );
 };
 
-const ChatBot = ({ userInput }) => {
+const ChatBot = ({ userInput, setRecommendation }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
-    
+
     const API_KEY = "AIzaSyCa9EL6KJcV1LK7RA6hRKdnvGSt_CxK-Mo";
     const genAI = new GoogleGenerativeAI(API_KEY);
-    
+
     const generateAIResponse = async () => {
         setLoading(true);
         try {
             const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             const result = await model.generateContent([`Loan details: ${JSON.stringify(userInput)}`]);
-    
-            // Fixing response extraction
-            const responseText = result?.response?.text || "AI did not return a response.";
-            
-            setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
+
+            const responseText = result?.response?.text() || "AI did not return a response.";
+            console.log(responseText);
+
+            // 🔹 Format AI Response into Points
+            const formattedResponse = responseText.split("**").map((item, index, arr) => {
+                if (index % 2 === 1) {
+                    return `<strong>${item}:</strong> ${arr[index + 1]}`;
+                }
+                return null;
+            }).filter(Boolean).join("<br/>");
+
+            setMessages(prev => [...prev, { role: 'assistant', content: formattedResponse }]);
+            setRecommendation(responseText);  // Store in LoanGuidance
         } catch (error) {
             console.error('AI Error:', error);
             setMessages(prev => [...prev, { role: 'assistant', content: "⚠️ Error fetching AI response. Please check your API key and network connection." }]);
         }
         setLoading(false);
     };
-    
-    
+
     return (
         <div className="fixed bottom-4 right-4 z-50">
             <button onClick={() => setIsOpen(!isOpen)} className="bg-blue-600 p-3 rounded-full shadow-lg hover:bg-blue-700">💬</button>
             {isOpen && (
-                <div className="bg-white p-4 shadow-lg rounded-md w-80 absolute bottom-12 right-0">
+                <div className="bg-white p-4 shadow-lg rounded-md w-120 absolute bottom-12 right-0">
                     <div className="h-40 overflow-y-auto border p-2 rounded bg-gray-100">
                         {messages.map((msg, index) => (
-                            <p key={index} className={`p-2 rounded ${msg.role === 'assistant' ? 'bg-blue-200' : 'bg-gray-200'}`}>{msg.content}</p>
+                            <p key={index} className={`p-2 rounded ${msg.role === 'assistant' ? 'bg-blue-200' : 'bg-gray-200'}`} dangerouslySetInnerHTML={{ __html: msg.content }}></p>
                         ))}
                     </div>
                     <button onClick={generateAIResponse} className="bg-green-500 text-white p-2 rounded mt-2 w-full disabled:opacity-50" disabled={loading}>{loading ? "Fetching..." : "Ask AI"}</button>
