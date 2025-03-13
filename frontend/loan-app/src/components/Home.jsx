@@ -45,13 +45,13 @@ function Navbar() {
       
       {/* Middle: Navigation */}
       <div className="hidden md:flex  transform translate-x-4 space-x-6">
-        <button className="hover:text-blue-300 border rounded-full px-4 py-2 transition-colors duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("features").scrollIntoView({ behavior: 'smooth' })}>
+        <button className="text-blue-600 bg-white border rounded-full px-4 py-2 font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("features").scrollIntoView({ behavior: 'smooth' })}>
           Features
         </button>
-        <button className="hover:text-blue-300  px-4 py-2  border rounded-full transition-colors duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("loan-checker").scrollIntoView({ behavior: 'smooth' })}>
+        <button className="text-blue-600 bg-white px-4 py-2  border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("loan-checker").scrollIntoView({ behavior: 'smooth' })}>
           Loan Checker
         </button>
-        <button className="hover:text-blue-300  px-4 py-2   border rounded-full transition-colors duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("about").scrollIntoView({ behavior: 'smooth' })}>
+        <button className="text-blue-600 bg-white px-4 py-2   border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("about").scrollIntoView({ behavior: 'smooth' })}>
           About
         </button>
       </div>
@@ -59,13 +59,13 @@ function Navbar() {
       {/* Right Side: Authentication Buttons */}
       <div className="flex space-x-2 md:space-x-4">
         <button
-          className="bg-white text-blue-600 px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-md hover:bg-gray-200 hover:scale-110 transition-transform duration-200"
+          className="bg-white text-blue-600 px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-md hover:bg-gradient-to-r from-blue-600 to-purple-700 hover:text-white hover:scale-110 transition-transform duration-200"
           onClick={() => navigate("/signup")}
         >
           Sign Up
         </button>
         <button
-          className="bg-white text-blue-600 px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-md hover:bg-gray-200 hover:scale-110 transition-transform duration-200"
+          className="bg-white text-blue-600 px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-md hover:bg-gradient-to-r from-blue-600 to-purple-700 hover:text-white hover:scale-110 transition-transform duration-200"
           onClick={() => navigate("/login")}
         >
           Sign In
