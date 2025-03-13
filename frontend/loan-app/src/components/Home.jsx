@@ -220,7 +220,7 @@ function LoanCheckerSection() {
           
           <button 
             className="bg-gradient-to-r from-blue-600 to-purple-700 text-white px-8 py-3 rounded-full font-bold shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 w-full"
-            onClick={() => navigate("/loan-check")}
+            onClick={() => navigate("/LoanChecker")}
           >
             Check Your Eligibility Now
           </button>
@@ -229,6 +229,7 @@ function LoanCheckerSection() {
     </div>
   );
 }
+
 
 function AboutSection() {
   return (
