@@ -21,7 +21,7 @@ export default function Signup() {
             toast.success("Signup Successful!"); // 🎉 Show success message
             
             setTimeout(() => {
-                navigate('/'); // Redirect after a short delay
+                navigate('/login'); // Redirect after a short delay
             }, 1500);
             
         } catch (err) {
