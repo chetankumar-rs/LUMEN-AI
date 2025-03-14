@@ -52,6 +52,9 @@ const AIResponseBox = ({ response }) => {
     );
 };
 
+
+
+
 const LoanGuidance = () => {
     const [userInput, setUserInput] = useState({
         income: '',
@@ -59,7 +62,8 @@ const LoanGuidance = () => {
         loanAmount: '',
         loanPurpose: ''
     });
-
+    const [messages, setMessages] = useState([]);
+    const[loading,setLoading]=useState(true);
     const [recommendation, setRecommendation] = useState('');
     const [error, setError] = useState('');
 
@@ -76,6 +80,37 @@ const LoanGuidance = () => {
         setRecommendation('');
         setError('');
     };
+     
+    const generateAIResponse = async () => {
+        setLoading(true);
+        const API_KEY = "AIzaSyCa9EL6KJcV1LK7RA6hRKdnvGSt_CxK-Mo";
+        const genAI = new GoogleGenerativeAI(API_KEY);
+
+        try {
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const result = await model.generateContent([`Loan details: ${JSON.stringify(userInput)}`]);
+    
+            const responseText = result?.response?.text() || "AI did not return a response.";
+            console.log(responseText);
+    
+            // 🔹 Format AI Response into Points
+            const formattedResponse = responseText.split("**").map((item, index, arr) => {
+                if (index % 2 === 1) {
+                    return `<strong>${item}:</strong> ${arr[index + 1]}`;
+                }
+                return null;
+            }).filter(Boolean).join("<br/>");
+    
+            setMessages(prev => [...prev, { role: 'assistant', content: formattedResponse }]);
+            setRecommendation(responseText);  // Store in LoanGuidance
+        } catch (error) {
+            console.error('AI Error:', error);
+            setMessages(prev => [...prev, { role: 'assistant', content: "⚠️ Error fetching AI response. Please check your API key and network connection." }]);
+        }
+        setLoading(false);
+    };
+   
+
 
     return (
         <div>
@@ -88,9 +123,9 @@ const LoanGuidance = () => {
                     <InputField label="Desired Loan Amount ($)" name="loanAmount" value={userInput.loanAmount} onChange={handleInputChange} min="0" />
                     <SelectField label="Loan Purpose" name="loanPurpose" value={userInput.loanPurpose} onChange={handleInputChange} />
                 </div>
-                <div className="flex justify-between mt-6">
-                    <Button text="Get Loan Guidance" color="blue" />
-                    <Button onClick={resetForm} text="Reset" color="red" />
+                <div className="flex justify-between gap-4 mt-6">
+                    <Button onClick={generateAIResponse} text="Get Loan Guidance" color="blue" />
+                    <Button onClick={resetForm} text="Reset" color="green" />
                 </div>
                 <AIResponseBox response={recommendation} />
             </div>
