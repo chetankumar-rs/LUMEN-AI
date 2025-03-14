@@ -51,6 +51,9 @@ function Navbar() {
         <button className="text-blue-600 bg-white px-4 py-2  border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("loan-checker").scrollIntoView({ behavior: 'smooth' })}>
           Loan Checker
         </button>
+        <button className="text-blue-600 bg-white px-4 py-2   border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() =>  navigate('/LoanGuidance')}>
+         Loan Guidance
+        </button>
         <button className="text-blue-600 bg-white px-4 py-2   border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("about").scrollIntoView({ behavior: 'smooth' })}>
           About
         </button>

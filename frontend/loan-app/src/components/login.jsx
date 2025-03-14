@@ -8,8 +8,9 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  
   const navigate = useNavigate();
-
+ const [tog,setTog]=useState(true);
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -20,7 +21,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
       toast.success("Login Successful!"); // 🎉 Show success message
-
+        setTog(false)
       setTimeout(() => {
         navigate('/'); // Redirect after a short delay
       }, 1500);
@@ -30,6 +31,8 @@ export default function Login() {
       toast.error("Invalid credentials"); // ❌ Show error message
     }
   };
+
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -62,9 +65,9 @@ export default function Login() {
             />
           </div>
           
-          <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600" type="submit">
-            Login
-          </button>
+         <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600" type="submit">
+          Login
+        </button>
         </form>
       </div>
     </div>
