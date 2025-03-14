@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const questions = [
   {
@@ -73,7 +74,6 @@ const questions = [
   },
 ];
 
-// Educational tips for each question
 const financialTips = {
   0: "Stable employment improves your loan eligibility. Lenders typically look for at least 6 months with your current employer.",
   1: "Lenders typically want to see that your monthly loan payment won't exceed 30-40% of your monthly income.",
@@ -93,22 +93,16 @@ export default function EnhancedLoanChecker() {
   const [submitted, setSubmitted] = useState(false);
   const [showTip, setShowTip] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [language, setLanguage] = useState("English");
   const [animateScore, setAnimateScore] = useState(0);
-  const [showChat, setShowChat] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    { text: "Hello! I'm LUMEN, your Loan Understanding & Management Expert Navigator. How can I help you today?", sender: "ai" }
-  ]);
-  const [userMessage, setUserMessage] = useState("");
+  const [userLoanData, setUserLoanData] = useState(null);
+  const API_KEY = "AIzaSyCa9EL6KJcV1LK7RA6hRKdnvGSt_CxK-Mo";
 
-  // Select an option
   const selectOption = (option) => {
     const updatedAnswers = { ...answers };
     updatedAnswers[currentStep] = option;
     setAnswers(updatedAnswers);
   };
 
-  // Navigate between questions
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
@@ -124,6 +118,14 @@ export default function EnhancedLoanChecker() {
   };
 
   const handleSubmit = () => {
+    const loanData = {
+      score: calculateScore(),
+      eligibleAmount: calculateEligibleAmount(),
+      riskLevel: getRiskLevel(calculateScore()),
+      suggestedRate: getInterestRate(calculateScore()),
+      answers: { ...answers }
+    };
+    setUserLoanData(loanData);
     setSubmitted(true);
   };
 
@@ -133,9 +135,9 @@ export default function EnhancedLoanChecker() {
     setSubmitted(false);
     setShowWelcome(true);
     setAnimateScore(0);
+    setUserLoanData(null);
   };
 
-  // Calculation functions
   const calculateScore = () => {
     let score = 0;
     questions.forEach((q, index) => {
@@ -145,7 +147,7 @@ export default function EnhancedLoanChecker() {
         const optionIndex = q.options.indexOf(answers[index]);
         const correctIndex = q.options.indexOf(q.correct);
         const diff = Math.abs(optionIndex - correctIndex);
-        
+
         if (diff === 1) score += q.weight * 0.5;
         else if (diff === 2) score += q.weight * 0.25;
       }
@@ -161,20 +163,13 @@ export default function EnhancedLoanChecker() {
     return eligibleAmount;
   };
 
-  const score = calculateScore();
-  const eligibleAmount = calculateEligibleAmount();
-  
-  // Calculate risk level
   const getRiskLevel = (score) => {
     if (score >= 85) return { level: "Low Risk", color: "text-green-600", description: "Excellent profile with strong eligibility for competitive rates." };
     if (score >= 65) return { level: "Moderate Risk", color: "text-yellow-600", description: "Good profile with reasonable eligibility for standard loan products." };
     if (score >= 40) return { level: "High Risk", color: "text-orange-600", description: "Several factors affecting eligibility. Consider improving your financial profile." };
     return { level: "Very High Risk", color: "text-red-600", description: "Significant challenges for loan approval. Focus on improving credit and financial situation." };
   };
-  
-  const riskLevel = getRiskLevel(score);
 
-  // Get suggested interest rate
   const getInterestRate = (score) => {
     if (score >= 85) return "5.75%";
     if (score >= 65) return "8.25%";
@@ -182,434 +177,495 @@ export default function EnhancedLoanChecker() {
     return "18.75%";
   };
 
-  const suggestedRate = getInterestRate(score);
-
-  // Check if current question is answered
   const isCurrentQuestionAnswered = answers[currentStep] !== undefined;
 
-  // Chat functionality
-  const handleChatSubmit = (e) => {
-    e.preventDefault();
-    if (!userMessage.trim()) return;
-
-    setChatMessages((prevMessages) => [
-        ...prevMessages,
-        { text: userMessage, sender: "user" }
-    ]);
-
-    // Simulate AI response after 1 second
-    setTimeout(() => {
-        let aiResponse = "I'm here to help with your loan questions. Could you be more specific about what you'd like to know?";
-        
-        const lowerMsg = userMessage.toLowerCase();
-        if (lowerMsg.includes("eligibility") || lowerMsg.includes("qualify")) {
-            aiResponse = "Loan eligibility typically depends on your income, credit score, existing debt, and employment stability. Would you like me to explain any of these factors in more detail?";
-        } else if (lowerMsg.includes("interest") || lowerMsg.includes("rate")) {
-            aiResponse = "Interest rates vary based on your credit score, loan type, and current market conditions. Higher credit scores generally qualify for lower interest rates.";
-        } else if (lowerMsg.includes("document") || lowerMsg.includes("paperwork")) {
-            aiResponse = "Common loan documents include proof of identity, proof of income (pay stubs, tax returns), bank statements, and information about your assets and debts. The specific requirements vary by lender.";
-        } else if (lowerMsg.includes("credit score") || lowerMsg.includes("credit history")) {
-            aiResponse = "Your credit score is a crucial factor in loan approval. Scores above 700 typically qualify for the best rates. You can improve your score by paying bills on time, reducing debt, and correcting errors on your credit report.";
-        }
-
-        setChatMessages((prev) => [...prev, { text: aiResponse, sender: "ai" }]);
-    }, 1000);
-
-    setUserMessage(""); // ✅ Clears the input after sending the message
-};
-
-
-
-  // Animation for score on results page
   useEffect(() => {
     if (submitted) {
       const timer = setInterval(() => {
         setAnimateScore(prev => {
-          if (prev < score) return prev + 1;
+          if (prev < calculateScore()) return prev + 1;
           clearInterval(timer);
-          return score;
+          return calculateScore();
         });
       }, 20);
       return () => clearInterval(timer);
     }
-  }, [submitted, score]);
+  }, [submitted]);
 
-  // Welcome screen component
-  const WelcomeScreen = () => (
-    <div className="text-center py-6 space-y-6">
-      <div className="text-5xl mb-2">💡</div>
-      <h1 className="text-3xl font-bold text-blue-800">Welcome to LUMEN</h1>
-      <p className="text-xl text-blue-600 font-medium">Loan Understanding & Management Expert Navigator</p>
-      <p className="text-gray-600 max-w-md mx-auto">Let's check your loan eligibility and provide personalized financial guidance to help you make informed decisions.</p>
-      
-      <div className="flex justify-center space-x-4 mt-6">
-        <div className="p-4 bg-blue-50 rounded-lg text-center w-32">
-          <div className="text-2xl mb-2">📊</div>
-          <div className="text-sm font-medium">Loan Eligibility</div>
-        </div>
-        <div className="p-4 bg-blue-50 rounded-lg text-center w-32">
-          <div className="text-2xl mb-2">📝</div>
-          <div className="text-sm font-medium">Application Guidance</div>
-        </div>
-        <div className="p-4 bg-blue-50 rounded-lg text-center w-32">
-          <div className="text-2xl mb-2">🎓</div>
-          <div className="text-sm font-medium">Financial Education</div>
-        </div>
-      </div>
-      
-      <div className="mt-6">
-        <select 
-          value={language} 
-          onChange={(e) => setLanguage(e.target.value)}
-          className="mr-4 px-3 py-2 border rounded text-sm"
-        >
-          <option value="English">English</option>
-          <option value="Spanish">Español</option>
-          <option value="French">Français</option>
-          <option value="Hindi">हिन्दी</option>
-        </select>
-        
-        <button 
-          onClick={() => setShowWelcome(false)} 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-        >
-          Start Assessment
-        </button>
-      </div>
-    </div>
-  );
+  const ChatWidget = () => {
+    const [showChat, setShowChat] = useState(false);
+    const [userMessage, setUserMessage] = useState('');
+    const [chatMessages, setChatMessages] = useState([
+      { sender: 'bot', text: 'Hi there! I\'m LUMEN, your Loan Understanding & Management Expert Navigator. How can I help you today?' }
+    ]);
+    const [isTyping, setIsTyping] = useState(false);
+    const messagesEndRef = useRef(null);
+    const genAI = new GoogleGenerativeAI(API_KEY);
 
-  // Chat widget component
-  const ChatWidget = () => (
-    <div className={`fixed bottom-6 right-6 z-10 ${showChat ? 'w-80 h-96' : 'w-auto h-auto'}`}>
-      {showChat ? (
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col h-full border border-gray-200">
-          <div className="bg-blue-700 text-white p-3 flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="text-xl mr-2">💬</div>
-              <div>LUMEN Assistant</div>
-            </div>
-            <button 
-              onClick={() => setShowChat(false)}
-              className="text-white hover:bg-blue-800 rounded-full h-6 w-6 flex items-center justify-center"
-            >
-              ✕
-            </button>
-          </div>
-          
-          <div className="flex-grow p-3 overflow-y-auto bg-gray-50">
-            {chatMessages.map((msg, idx) => (
-              <div 
-                key={idx} 
-                className={`mb-3 max-w-xs ${msg.sender === 'user' ? 'ml-auto' : ''}`}
-              >
-                <div 
-                  className={`p-3 rounded-lg ${
-                    msg.sender === 'user' 
-                      ? 'bg-blue-600 text-white rounded-br-none' 
-                      : 'bg-white border border-gray-200 rounded-bl-none'
-                  }`}
-                >
-                  {msg.text}
-                </div>
+    useEffect(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, [chatMessages]);
+
+    useEffect(() => {
+      if (submitted && userLoanData) {
+        const welcomeMessage = `Based on your profile, you're eligible for a loan of up to $${userLoanData.eligibleAmount.toLocaleString()} with a ${userLoanData.riskLevel.level} profile. How can I help you with your application?`;
+        setChatMessages([
+          { sender: 'bot', text: 'Hi there! I\'m LUMEN, your Loan Understanding & Management Expert Navigator.' },
+          { sender: 'bot', text: welcomeMessage }
+        ]);
+      }
+    }, [submitted, userLoanData]);
+
+    const handleChatSubmit = async (e) => {
+      e.preventDefault();
+      if (!userMessage.trim()) return;
+
+      setChatMessages((prev) => [...prev, { sender: 'user', text: userMessage }]);
+      const currentMessage = userMessage;
+      setUserMessage('');
+      setIsTyping(true);
+
+      try {
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        let prompt = `You are LUMEN, a friendly loan advisor. Respond to this question in plain conversational text (not markdown): ${currentMessage}`;
+
+        if (userLoanData) {
+          prompt += `\n\nUser's loan profile information:
+          - Eligibility Score: ${userLoanData.score}/100
+          - Eligible Loan Amount: $${userLoanData.eligibleAmount}
+          - Risk Level: ${userLoanData.riskLevel.level}
+          - Suggested Interest Rate: ${userLoanData.suggestedRate}
+          - Employment Status: ${userLoanData.answers[0] || "Not provided"}
+          - Monthly Income: ${userLoanData.answers[1] || "Not provided"}
+          - Credit Score: ${userLoanData.answers[2] || "Not provided"}
+          - Loan Type: ${userLoanData.answers[3] || "Not provided"}
+          - Loan Amount: ${userLoanData.answers[4] || "Not provided"}
+          - Existing Loans: ${userLoanData.answers[5] || "Not provided"}
+          - Age Group: ${userLoanData.answers[6] || "Not provided"}
+          - Has Collateral: ${userLoanData.answers[7] || "Not provided"}
+          - Loan Purpose: ${userLoanData.answers[8] || "Not provided"}
+          - Repayment Term: ${userLoanData.answers[9] || "Not provided"}`;
+        }
+
+        const result = await model.generateContent(prompt);
+        let botResponse = result?.response?.text() || "I'm having trouble processing your request. Please try again.";
+        botResponse = botResponse.replace(/```[\s\S]*?```/g, '');
+        botResponse = botResponse.replace(/\*\*/g, '');
+        botResponse = botResponse.replace(/\*/g, '');
+        botResponse = botResponse.replace(/#+ /g, '');
+
+        setTimeout(() => {
+          setChatMessages((prev) => [...prev, { sender: 'bot', text: botResponse }]);
+          setIsTyping(false);
+        }, 700);
+      } catch (error) {
+        console.error('Chat error:', error);
+        setTimeout(() => {
+          setChatMessages((prev) => [...prev, { sender: 'bot', text: "I'm having trouble connecting. Please try again later." }]);
+          setIsTyping(false);
+        }, 700);
+      }
+    };
+
+    return (
+      <div className="fixed bottom-6 right-6 z-50">
+        {showChat ? (
+          <div className="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col h-96 w-80 sm:w-96 border border-gray-200">
+            <div className="bg-blue-700 text-white p-3 flex justify-between items-center">
+              <div className="flex items-center">
+                <div className="text-xl mr-2">💡</div>
+                <div>LUMEN Assistant</div>
               </div>
-            ))}
-          </div>
-          
-          <form onSubmit={handleChatSubmit} className="border-t border-gray-200 p-3 bg-white">
-            <div className="flex">
-              <input
-                type="text"
-                value={userMessage}
-                onChange={(e) => setUserMessage(e.target.value)}
-                placeholder="Ask about loans, eligibility..."
-                className="flex-grow p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button 
-                type="submit"
-                className="bg-blue-600 text-white px-4 rounded-r-lg hover:bg-blue-700"
+              <button
+                onClick={() => setShowChat(false)}
+                className="text-white hover:bg-blue-800 rounded-full h-6 w-6 flex items-center justify-center"
+                aria-label="Close chat"
               >
-                Send
+                ✕
               </button>
             </div>
-          </form>
-        </div>
-      ) : (
-        <button 
-          onClick={() => setShowChat(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg"
-        >
-          <div className="text-xl">💬</div>
-        </button>
-      )}
-    </div>
-  );
 
-  return (
-    <div className="p-6 max-w-4xl mx-auto bg-gradient-to-b from-blue-50 to-white min-h-screen relative">
-      {/* LUMEN Header */}
-      <div className="flex items-center justify-center mb-6">
-        <div className="text-4xl mr-2">💡</div>
-        <h1 className="text-2xl font-bold text-blue-800">LUMEN</h1>
-      </div>
-      
-      {/* Main Card */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-        {showWelcome ? (
-          <WelcomeScreen />
-        ) : (
-          <>
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4">
-              <h2 className="text-2xl text-center font-bold">Loan Eligibility Checker</h2>
-            </div>
-            <div className="p-6">
-              {!submitted ? (
-                <>
-                  <div className="mb-6">
-                    <div className="flex justify-between mb-2 text-sm">
-                      <span>Question {currentStep + 1} of {questions.length}</span>
-                      <span>{Math.round((currentStep / questions.length) * 100)}% Complete</span>
-                    </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-600 transition-all duration-300"
-                        style={{ width: `${(currentStep / questions.length) * 100}%` }}
-                      ></div>
-                    </div>
+            <div className="flex-grow p-3 overflow-y-auto bg-gray-50">
+              {chatMessages.map((msg, idx) => (
+                <div key={idx} className={`mb-3 ${msg.sender === 'user' ? 'ml-auto' : 'mr-auto'} max-w-3/4`}>
+                  <div className={`p-3 rounded-lg ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-gray-200 rounded-bl-none shadow-sm'}`}>
+                    {msg.text}
                   </div>
-                  
-                  <div className="py-4 border-b border-gray-100">
-                    <div className="flex items-center mb-6">
-                      <div className="text-3xl mr-3">{questions[currentStep].icon}</div>
-                      <h3 className="text-xl font-medium">{questions[currentStep].question}</h3>
-                      
-                      <button 
-                        onClick={() => setShowTip(!showTip)}
-                        className="ml-auto text-blue-500 hover:text-blue-700 flex items-center text-sm"
-                      >
-                        <span className="mr-1">💡</span> Tip
-                      </button>
-                    </div>
-                    
-                    {showTip && (
-                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r">
-                        <p className="text-blue-800">{financialTips[currentStep]}</p>
-                      </div>
-                    )}
-                    
-                    <div className="grid gap-3">
-                      {questions[currentStep].options.map((option) => (
-                        <div 
-                          key={option}
-                          className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                            answers[currentStep] === option 
-                              ? 'bg-blue-600 text-white border-blue-700 shadow-md transform -translate-y-1' 
-                              : 'bg-white hover:bg-blue-50 border-gray-300 hover:shadow'
-                          }`}
-                          onClick={() => selectOption(option)}
-                        >
-                          {option}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                </div>
+              ))}
 
-                  <div className="flex justify-between mt-6">
-                    {currentStep > 0 && (
-                      <button 
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 flex items-center"
-                        onClick={handlePrevious}
-                      >
-                        <span className="mr-1">←</span> Previous
-                      </button>
-                    )}
-                    
-                    <div className="ml-auto">
-                      {currentStep < questions.length - 1 ? (
-                        <button 
-                          className={`px-6 py-2 rounded-lg flex items-center ${
-                            isCurrentQuestionAnswered 
-                              ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          }`}
-                          onClick={handleNext}
-                          disabled={!isCurrentQuestionAnswered}
-                        >
-                          Next <span className="ml-1">→</span>
-                        </button>
-                      ) : (
-                        <button
-                          className={`px-6 py-2 rounded-lg ${
-                            isCurrentQuestionAnswered 
-                              ? 'bg-green-600 text-white hover:bg-green-700' 
-                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          }`}
-                          onClick={handleSubmit}
-                          disabled={!isCurrentQuestionAnswered}
-                        >
-                          Check Eligibility
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="py-4">
-                  <h2 className="text-2xl font-bold mb-6 text-center">Your Loan Eligibility Results</h2>
-                  
-                  <div className="text-center mb-8">
-                    <div className="inline-block rounded-full bg-blue-100 p-6 mb-2">
-                      <div className="text-4xl font-bold text-blue-700">${eligibleAmount.toLocaleString()}</div>
-                      <div className="text-sm text-blue-600">Eligible Loan Amount</div>
-                    </div>
-                    
-                    <div className="text-sm text-gray-600 max-w-md mx-auto">
-                      This is an estimated amount based on your profile. Actual loan offers may vary.
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-100 rounded-lg p-6 mb-6">
-                    <div className="flex justify-between mb-2 items-center">
-                      <span className="font-medium">Your Score:</span>
-                      <span className="text-2xl font-bold text-blue-700">{animateScore}/100</span>
-                    </div>
-                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-4">
-                      <div 
-                        className="h-full bg-blue-600 transition-all duration-500 ease-out"
-                        style={{ width: `${animateScore}%` }}
-                      ></div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                      <div className="bg-white p-4 rounded-lg shadow-sm">
-                        <div className="text-sm text-gray-500 mb-1">Risk Assessment</div>
-                        <div className={`font-bold text-lg ${riskLevel.color}`}>{riskLevel.level}</div>
-                        <p className="text-sm text-gray-600 mt-2">{riskLevel.description}</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-lg shadow-sm">
-                        <div className="text-sm text-gray-500 mb-1">Suggested Interest Rate</div>
-                        <div className="font-bold text-lg text-blue-600">{suggestedRate}</div>
-                        <p className="text-sm text-gray-600 mt-2">
-                          This is an estimated rate. Actual rates depend on lender evaluation and market conditions.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-                    <h3 className="font-medium text-blue-800 mb-4">Your Profile Summary</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3">
-                      <div className="flex justify-between pr-4">
-                        <span className="text-gray-600">Employment:</span>
-                        <span className="font-medium">{answers[0] || "Not provided"}</span>
-                      </div>
-                      <div className="flex justify-between pr-4">
-                        <span className="text-gray-600">Monthly Income:</span>
-                        <span className="font-medium">{answers[1] || "Not provided"}</span>
-                      </div>
-                      <div className="flex justify-between pr-4">
-                        <span className="text-gray-600">Credit Score:</span>
-                        <span className="font-medium">{answers[2] || "Not provided"}</span>
-                      </div>
-                      <div className="flex justify-between pr-4">
-                        <span className="text-gray-600">Loan Type:</span>
-                        <span className="font-medium">{answers[3] || "Not provided"}</span>
-                      </div>
-                      <div className="flex justify-between pr-4">
-                        <span className="text-gray-600">Loan Purpose:</span>
-                        <span className="font-medium">{answers[8] || "Not provided"}</span>
-                      </div>
-                      <div className="flex justify-between pr-4">
-                        <span className="text-gray-600">Repayment Term:</span>
-                        <span className="font-medium">{answers[9] || "Not provided"}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-                    <h3 className="font-medium text-green-800 mb-3 flex items-center">
-                      <span className="mr-2">🎓</span> Financial Education Tips
-                    </h3>
-                    <ul className="space-y-3">
-                      <li className="flex">
-                        <span className="mr-2 text-green-600">•</span>
-                        <span>Consider improving your credit score to qualify for better interest rates.</span>
-                      </li>
-                      <li className="flex">
-                        <span className="mr-2 text-green-600">•</span>
-                        <span>Make sure your monthly loan payment doesn't exceed 30% of your monthly income.</span>
-                      </li>
-                      <li className="flex">
-                        <span className="mr-2 text-green-600">•</span>
-                        <span>Compare loan offers from multiple lenders to find the best terms.</span>
-                      </li>
-                      <li className="flex">
-                        <span className="mr-2 text-green-600">•</span>
-                        <span>Read all loan terms carefully before signing, paying attention to fees and penalties.</span>
-                      </li>
-                    </ul>
-                  </div>
-                  
-                  <div className="bg-blue-600 text-white rounded-lg p-6 mb-6">
-                    <h3 className="font-medium mb-3 flex items-center">
-                      <span className="mr-2">💬</span> Need Help?
-                    </h3>
-                    <p className="mb-4">Chat with our LUMEN assistant for personalized guidance on your loan options and application process.</p>
-                    <button 
-                      onClick={() => {
-                        setShowChat(true);
-                        setChatMessages([
-                          ...chatMessages,
-                          { 
-                            text: `Based on your profile, you're eligible for a loan of up to $${eligibleAmount.toLocaleString()}. Would you like help with the next steps in the application process?`, 
-                            sender: "ai" 
-                          }
-                        ]);
-                      }} 
-                      className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50"
-                    >
-                      Start Chat
-                    </button>
+              {isTyping && (
+                <div className="mb-3 mr-auto">
+                  <div className="bg-white border border-gray-200 rounded-lg rounded-bl-none p-3 shadow-sm flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                   </div>
                 </div>
               )}
+
+              <div ref={messagesEndRef} />
             </div>
-            <div className="bg-gray-50 border-t p-4 flex justify-between items-center">
-              {submitted ? (
-                <button 
-                  onClick={handleReset} 
-                  className="w-full p-3 border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50 font-medium"
+
+            <form onSubmit={handleChatSubmit} className="border-t border-gray-200 p-3 bg-white">
+              <div className="flex">
+                <input
+                  type="text"
+                  value={userMessage}
+                  onChange={(e) => setUserMessage(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1 p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  Start New Assessment
+                  ➤
                 </button>
-              ) : (
-                <div className="text-sm text-gray-500 italic w-full text-center">
-                  Your information is kept private and secure.
-                </div>
-              )}
-            </div>
-          </>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowChat(true)}
+            className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Open chat"
+          >
+            💬
+          </button>
         )}
       </div>
+    );
+  };
+
+  return (
+    <div className="relative">
+    {showWelcome && (
+      <div className="bg-gradient-to-r from-blue-100 to-indigo-50 rounded-xl shadow-lg p-8 transform transition-all duration-500 hover:shadow-xl max-w-3xl mx-auto border border-blue-200">
+        <div className="flex flex-col md:flex-row items-center justify-between">
+          <div className="md:w-1/2 text-left mb-6 md:mb-0 md:pr-8">
+            <div className="inline-block p-3 bg-blue-600 text-white rounded-full mb-4 shadow-md transform transition-transform hover:scale-110">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h1 className="text-3xl font-bold mb-3 text-blue-800">Discover Your Loan Potential</h1>
+            <p className="text-gray-700 mb-4">Our intelligent assessment tool analyzes your financial profile to provide personalized recommendations and maximize your approval chances.</p>
+            
+            <div className="flex flex-wrap gap-4 mb-6">
+              <div className="flex items-center text-gray-700">
+                <div className="mr-2 text-green-500">✓</div>
+                <span className="text-sm">Quick 2-minute assessment</span>
+              </div>
+              <div className="flex items-center text-gray-700">
+                <div className="mr-2 text-green-500">✓</div>
+                <span className="text-sm">Personalized results</span>
+              </div>
+              <div className="flex items-center text-gray-700">
+                <div className="mr-2 text-green-500">✓</div>
+                <span className="text-sm">Expert AI assistance</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="md:w-1/2 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+            <div className="text-center mb-6">
+              <div className="inline-block p-4 bg-blue-50 rounded-full mb-2">
+                <span className="text-2xl">🚀</span>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-800">Ready to Begin?</h2>
+              <p className="text-gray-600 text-sm mb-4">Complete our quick assessment to receive your personalized loan eligibility score.</p>
+            </div>
+            
+            <button
+              onClick={() => setShowWelcome(false)}
+              className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium transition-all transform hover:bg-blue-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
+            >
+              Start My Assessment
+            </button>
+            
+            <div className="mt-4 text-center text-xs text-gray-500">
+              No credit check required • 100% secure • Free analysis
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+{!showWelcome && !submitted && (
+  <div className="bg-gradient-to-b from-white to-blue-50 rounded-xl shadow-lg p-8 border border-blue-100 max-w-3xl mx-auto">
+    {/* Progress bar */}
+    <div className="mb-6">
+      <div className="flex justify-between text-sm text-gray-600 mb-2">
+        <span>Your Progress</span>
+        <span>{Math.round(((currentStep + 1) / questions.length) * 100)}% Complete</span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+          style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
+        ></div>
+      </div>
+    </div>
+    
+    {/* Question section with animation */}
+    <div className="bg-white rounded-lg p-6 shadow-md border border-gray-100 mb-6 transition-all transform hover:shadow-lg">
+      <div className="flex items-center mb-4">
+        <div className="bg-blue-100 text-blue-800 rounded-full p-2 mr-3 text-xl">
+          {questions[currentStep].icon}
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800">
+          {questions[currentStep].question}
+        </h3>
+      </div>
       
-      {/* Chat widget */}
-      <ChatWidget />
-      
-      {/* Language selector in fixed position */}
-      {!showWelcome && !submitted && (
-        <div className="fixed top-4 right-4">
-          <select 
-            value={language} 
-            onChange={(e) => setLanguage(e.target.value)}
-            className="px-2 py-1 border rounded text-sm bg-white shadow-sm"
+      <div className="space-y-3 mb-4">
+        {questions[currentStep].options.map((option, index) => (
+          <button
+            key={index}
+            onClick={() => selectOption(option)}
+            className={`w-full text-left px-6 py-4 rounded-lg transition-all transform hover:translate-x-1 ${
+              answers[currentStep] === option
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+            }`}
           >
-            <option value="English">English</option>
-            <option value="Spanish">Español</option>
-            <option value="French">Français</option>
-            <option value="Hindi">हिन्दी</option>
-          </select>
+            <div className="flex items-center">
+              <div className={`w-5 h-5 mr-3 rounded-full flex items-center justify-center border ${
+                answers[currentStep] === option
+                  ? 'bg-white border-white'
+                  : 'border-gray-400'
+              }`}>
+                {answers[currentStep] === option && <div className="w-3 h-3 bg-blue-600 rounded-full"></div>}
+              </div>
+              <span>{option}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+      
+      {/* Financial tip section with animation */}
+      <div className="mt-6">
+        <button
+          onClick={() => setShowTip(!showTip)}
+          className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          <span className="mr-2">💡</span>
+          <span>{showTip ? 'Hide Financial Tip' : 'Show Financial Tip'}</span>
+          <span className="ml-2">{showTip ? '▲' : '▼'}</span>
+        </button>
+        
+        {showTip && (
+          <div className="mt-3 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-md animate-fadeIn text-blue-800">
+            {financialTips[currentStep]}
+          </div>
+        )}
+      </div>
+    </div>
+    
+    {/* Navigation controls */}
+    <div className="flex justify-between items-center">
+      <button
+        onClick={handlePrevious}
+        disabled={currentStep === 0}
+        className={`px-6 py-3 rounded-lg flex items-center transition-transform transform ${
+          currentStep === 0
+            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            : 'bg-gray-600 text-white hover:bg-gray-700 hover:scale-105'
+        }`}
+      >
+        <span className="mr-2">←</span>
+        <span>Previous</span>
+      </button>
+      
+      <div className="text-center bg-blue-100 px-4 py-2 rounded-full text-blue-800 font-medium">
+        Question {currentStep + 1} of {questions.length}
+      </div>
+      
+      {currentStep === questions.length - 1 ? (
+        <button
+          onClick={handleSubmit}
+          disabled={!isCurrentQuestionAnswered}
+          className={`px-6 py-3 rounded-lg flex items-center transition-transform ${
+            isCurrentQuestionAnswered
+              ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+        >
+          <span>Submit</span>
+          <span className="ml-2">✓</span>
+        </button>
+      ) : (
+        <button
+          onClick={() => isCurrentQuestionAnswered && setCurrentStep(currentStep + 1)}
+          disabled={!isCurrentQuestionAnswered}
+          className={`px-6 py-3 rounded-lg flex items-center transition-transform ${
+            isCurrentQuestionAnswered
+              ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+        >
+          <span>Next</span>
+          <span className="ml-2">→</span>
+        </button>
+      )}
+          </div>
+
+          {showTip && (
+            <div className="mt-4 p-4 bg-yellow-50 rounded-lg text-yellow-800">
+              {financialTips[currentStep]}
+            </div>
+          )}
         </div>
       )}
+
+{submitted && (
+  <div className="bg-gradient-to-b from-blue-50 to-white rounded-xl shadow-xl p-8 border border-blue-100 max-w-3xl mx-auto">
+    <div className="text-center mb-8">
+      <div className="inline-flex items-center justify-center bg-blue-600 text-white rounded-full p-4 mb-4 shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h2 className="text-3xl font-bold mb-2 text-blue-800">Your Loan Assessment</h2>
+      <p className="text-gray-600 mb-8">Based on your profile, we've analyzed your loan eligibility</p>
+    </div>
+    
+    {/* Animated score meter */}
+    <div className="mb-10">
+      <p className="text-center text-lg font-medium text-gray-700 mb-3">Your Eligibility Score</p>
+      <div className="relative h-8 bg-gray-200 rounded-full overflow-hidden mb-2">
+        <div 
+          className="h-full transition-all duration-1000 ease-out rounded-full"
+          style={{ 
+            width: `${animateScore}%`,
+            background: `linear-gradient(90deg, 
+              ${animateScore < 40 ? '#EF4444' : animateScore < 65 ? '#F59E0B' : animateScore < 85 ? '#10B981' : '#2563EB'} 0%, 
+              ${animateScore < 40 ? '#F87171' : animateScore < 65 ? '#FBBF24' : animateScore < 85 ? '#34D399' : '#3B82F6'} 100%)`
+          }}
+        ></div>
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center text-white font-bold text-lg shadow-inner">
+          {animateScore}/100
+        </div>
+      </div>
+      <div className="flex justify-between text-xs text-gray-500">
+        <span>Poor</span>
+        <span>Fair</span>
+        <span>Good</span>
+        <span>Excellent</span>
+      </div>
+    </div>
+    
+    {/* Results cards */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      {/* Risk Level Card */}
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 transform transition-all hover:shadow-lg">
+        <div className="flex items-center mb-4">
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 ${
+            userLoanData?.riskLevel.level === "Low Risk" ? "bg-green-100" :
+            userLoanData?.riskLevel.level === "Moderate Risk" ? "bg-yellow-100" :
+            userLoanData?.riskLevel.level === "High Risk" ? "bg-orange-100" : "bg-red-100"
+          }`}>
+            <span className="text-2xl">
+              {userLoanData?.riskLevel.level === "Low Risk" ? "✓" :
+               userLoanData?.riskLevel.level === "Moderate Risk" ? "⚠️" :
+               userLoanData?.riskLevel.level === "High Risk" ? "⚠️" : "⛔"}
+            </span>
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-700">Risk Assessment</h3>
+            <p className={`text-xl font-bold ${userLoanData?.riskLevel.color}`}>
+              {userLoanData?.riskLevel.level}
+            </p>
+          </div>
+        </div>
+        <p className="text-gray-600 text-sm">{userLoanData?.riskLevel.description}</p>
+      </div>
+      
+      {/* Amount Card */}
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 transform transition-all hover:shadow-lg">
+        <div className="flex items-center mb-4">
+          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+            <span className="text-2xl">💰</span>
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-700">Eligible Amount</h3>
+            <p className="text-xl font-bold text-blue-600">
+              ${userLoanData?.eligibleAmount.toLocaleString()}
+            </p>
+          </div>
+        </div>
+        <p className="text-gray-600 text-sm">Maximum loan amount based on your profile</p>
+      </div>
+      
+      {/* Interest Rate Card */}
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 transform transition-all hover:shadow-lg">
+        <div className="flex items-center mb-4">
+          <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+            <span className="text-2xl">📊</span>
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-700">Interest Rate</h3>
+            <p className="text-xl font-bold text-purple-600">
+              {userLoanData?.suggestedRate}
+            </p>
+          </div>
+        </div>
+        <p className="text-gray-600 text-sm">Estimated annual percentage rate</p>
+      </div>
+      
+      {/* Recommendation Card */}
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 transform transition-all hover:shadow-lg">
+        <div className="flex items-center mb-4">
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+            <span className="text-2xl">💡</span>
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-700">Next Steps</h3>
+            <p className="text-lg font-medium text-green-600">
+              Chat with LUMEN
+            </p>
+          </div>
+        </div>
+        <p className="text-gray-600 text-sm">Get personalized advice to improve your eligibility</p>
+      </div>
+    </div>
+    
+    {/* Action buttons */}
+    <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+      <button 
+        onClick={() => setShowChat(true)}
+        className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-all transform hover:scale-105 shadow-md"
+      >
+        <span className="mr-2">💬</span>
+        Chat with LUMEN
+      </button>
+      
+      <button 
+        onClick={handleReset} 
+        className="px-6 py-3 bg-gray-600 text-white rounded-lg flex items-center justify-center hover:bg-gray-700 transition-all transform hover:scale-105 shadow-md"
+      >
+        <span className="mr-2">🔄</span>
+        Start Over
+      </button>
+    </div>
+    
+    {/* Share results */}
+    <div className="mt-8 text-center">
+      <p className="text-gray-500 text-sm mb-2">Share your results</p>
+      <div className="flex justify-center space-x-4">
+        <button className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700">f</button>
+        <button className="w-8 h-8 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500">t</button>
+        <button className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-700">w</button>
+        <button className="w-8 h-8 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700">✉</button>
+      </div>
+    </div>
+  </div>
+)}
+
+      <ChatWidget />
     </div>
   );
 }
