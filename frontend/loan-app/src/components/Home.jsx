@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect ,useRef} from "react";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -20,36 +20,167 @@ function ChatBot() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentPlayingIndex, setCurrentPlayingIndex] = useState(null);
+  const audioRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll to bottom when messages update
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!prompt.trim()) return;
     setLoading(true);
-
+    
     try {
       const response = await fetch("http://localhost:5005/api/generate/g", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt })
       });
-
+      
       const data = await response.json();
+      
+      // Log the full response for debugging
+      console.log("API Response:", data);
+      
       const formattedResponse = formatResponse(data.text);
-
-      setMessages(prev => [...prev, { role: "user", content: prompt }, { role: "assistant", content: formattedResponse }]);
+      
+      // Add the speech data to the message
+      const newMessage = { 
+        role: "assistant", 
+        content: formattedResponse,
+        speechData: data.speech  // This contains the entire speech response object
+      };
+      
+      setMessages(prev => [...prev, { role: "user", content: prompt }, newMessage]);
       setPrompt("");
     } catch (error) {
       console.error("Chatbot Error:", error);
       setMessages(prev => [...prev, { role: "assistant", content: "⚠️ Error fetching response" }]);
     }
-
+    
     setLoading(false);
   };
 
-  // ✅ Function to Format AI Response (Splitting "**" to Bold Key Points)
+  // Function to Format AI Response (Splitting "**" to Bold Key Points)
   const formatResponse = (response) => {
     return response.split("**").map((item, index) => (
       index % 2 === 1 ? <strong key={index}>{item}</strong> : <span key={index}>{item}</span>
     ));
+  };
+
+  // Function to play speech for a message
+  const playAudio = (speechData) => {
+    try {
+      console.log("Speech data received:", JSON.stringify(speechData).substring(0, 200) + "...");
+      
+      // Basic validation
+      if (!speechData) {
+        console.error("Speech data is null or undefined");
+        return;
+      }
+  
+      // Extract audio data - handle different possible structures
+      let audioBase64 = null;
+      
+      if (speechData.audios && Array.isArray(speechData.audios)) {
+        console.log("Found audios array with length:", speechData.audios.length);
+        
+        if (speechData.audios.length > 0) {
+          const audioData = speechData.audios[0];
+          console.log("First audio item type:", typeof audioData);
+          
+          if (typeof audioData === 'string') {
+            audioBase64 = audioData;
+            console.log("Found string audio data");
+          } else if (audioData && typeof audioData === 'object') {
+            console.log("Audio data object keys:", Object.keys(audioData));
+            audioBase64 = audioData.audio_base64 || audioData.audio || null;
+            
+            if (audioBase64) {
+              console.log("Found audio data in object property");
+            }
+          }
+        } else {
+          console.log("Audios array is empty");
+          // If speech API call failed or returned empty, inform the user
+          // You could add UI feedback here
+          return;
+        }
+      } else if (typeof speechData === 'string') {
+        audioBase64 = speechData;
+        console.log("Speech data is directly a string");
+      } else if (speechData.speech && speechData.speech.audios) {
+        // Handle nested structure if response wasn't properly extracted
+        console.log("Found nested speech.audios structure");
+        return playAudio(speechData.speech);
+      }
+  
+      // Final validation
+      if (!audioBase64) {
+        console.error("Could not extract valid audio data from response");
+        return;
+      }
+  
+      // Safety check: ensure it looks like base64
+      if (!/^[A-Za-z0-9+/=]+$/.test(audioBase64)) {
+        console.error("Invalid base64 data detected");
+        return;
+      }
+  
+      console.log("Audio base64 data length:", audioBase64.length);
+      
+      // Create audio element if ref doesn't exist yet
+      if (!audioRef.current) {
+        console.error("Audio reference is not available");
+        return;
+      }
+  
+      // Set up audio source and play
+      const audioSrc = `data:audio/wav;base64,${audioBase64}`;
+      audioRef.current.src = audioSrc;
+      audioRef.current.load();
+      
+      // Set up event handlers
+      audioRef.current.onloadeddata = () => {
+        console.log("Audio loaded, duration:", audioRef.current.duration);
+        
+        audioRef.current
+          .play()
+          .then(() => {
+            setIsSpeaking(true);
+            console.log("Audio playing successfully");
+          })
+          .catch((err) => {
+            console.error("Audio play error:", err);
+            setIsSpeaking(false);
+          });
+      };
+      
+      audioRef.current.onended = () => {
+        console.log("Audio playback complete");
+        setIsSpeaking(false);
+      };
+      
+      audioRef.current.onerror = (e) => {
+        console.error("Audio loading error:", e.target.error);
+        setIsSpeaking(false);
+      };
+    } catch (error) {
+      console.error("Unexpected error in playAudio:", error);
+      setIsSpeaking(false);
+    }
+  };
+
+  // Handle audio events
+  const handleAudioEnded = () => {
+    setIsSpeaking(false);
+    setCurrentPlayingIndex(null);
   };
 
   return (
@@ -59,12 +190,22 @@ function ChatBot() {
       </button>
       {isOpen && (
         <div className="bg-white p-4 shadow-lg rounded-md w-80 absolute bottom-12 right-0">
-          <div className="h-40 overflow-y-auto border p-2 rounded bg-gray-100 space-y-2">
+          <div className="h-60 overflow-y-auto border p-2 rounded bg-gray-100 space-y-2">
             {messages.map((msg, index) => (
-              <p key={index} className={`p-2 rounded ${msg.role === "assistant" ? "bg-blue-200" : "bg-gray-200"}`}>
-                {msg.content}
-              </p>
+              <div key={index} className={`p-2 rounded ${msg.role === "assistant" ? "bg-blue-200" : "bg-gray-200"}`}>
+                <p>{msg.content}</p>
+                {msg.role === "assistant" && msg.speechData && (
+                  <button 
+                    onClick={() => playAudio(msg.speechData, index)} 
+                    disabled={isSpeaking}
+                    className="mt-1 bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded"
+                  >
+                    {isSpeaking && currentPlayingIndex === index ? "Playing..." : "🔊 Listen"}
+                  </button>
+                )}
+              </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
           <div className="flex mt-2">
             <input
@@ -73,16 +214,28 @@ function ChatBot() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Ask me something..."
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
             />
             <button onClick={sendMessage} className="bg-green-500 text-white p-2 rounded ml-2" disabled={loading}>
               {loading ? "..." : "Send"}
             </button>
           </div>
+          <audio 
+            ref={audioRef} 
+            onEnded={handleAudioEnded} 
+            onError={(e) => {
+              console.error("Audio error:", e);
+              setIsSpeaking(false);
+              setCurrentPlayingIndex(null);
+            }}
+            style={{ display: 'none' }} 
+          />
         </div>
       )}
     </div>
   );
 }
+
 
 
 function Navbar() {
