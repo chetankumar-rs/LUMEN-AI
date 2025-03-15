@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+// Import your existing ChatbotPage component
+import ChatbotPage from "./chatbot";
+
+ // Update with your actual path
 
 export default function LoanOptionsPage() {
   const navigate = useNavigate();
   const [selectedLoan, setSelectedLoan] = useState(null);
+  // State to control chatbot visibility
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   
   const loanOptions = [
     {
@@ -79,6 +85,11 @@ export default function LoanOptionsPage() {
     if (selectedLoan) {
       navigate(`/loan-application/${selectedLoan}`);
     }
+  };
+
+  // Toggle chatbot visibility
+  const toggleChatbot = () => {
+    setIsChatbotOpen(!isChatbotOpen);
   };
 
   return (
@@ -230,15 +241,35 @@ export default function LoanOptionsPage() {
             )}
             
             <span className="relative z-10 flex items-center justify-center">
-              {selectedLoan ? 'Continue Application' : 'Select a Loan Type'}
-              {selectedLoan && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              )}
+              {selectedLoan ? 'Continue Application' : 'Select a Loan'}
             </span>
           </motion.button>
         </motion.div>
+
+        {/* Chatbot Button */}
+        <motion.button
+          className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={toggleChatbot}
+        >
+          {isChatbotOpen ? "Close Chatbot" : "Chat with Us"}
+        </motion.button>
+
+        {/* Chatbot Component */}
+        <AnimatePresence>
+          {isChatbotOpen && (
+            <motion.div
+              className="fixed bottom-16 right-6 w-10 h-10 bg-white shadow-2xl rounded-lg overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ChatbotPage />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
