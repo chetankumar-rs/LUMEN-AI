@@ -194,7 +194,8 @@ function Outlet() {
       </div>
       
       {/* Main content */}
-      <motion.div className="relative z-10 flex flex-col items-center">
+      <motion.div className="relative z-10 flex flex-col items-center justify-center space-y-[100px] space-x-5 w-full">
+ 
         {/* Enhanced logo animation */}
         <motion.div
           animate={{ 
@@ -204,47 +205,53 @@ function Outlet() {
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           className="mb-10"
         >
-          <motion.div
-  className="relative mb-12"
-  initial={{ opacity: 0, y: -10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 1.2, ease: "easeOut" }}
->
-  <motion.h1 
-    className="text-7xl font-light tracking-widest text-white relative z-10"
-    style={{ letterSpacing: "0.15em" }}
-    animate={{
-      textShadow: [
-        "0 0 10px rgba(255,255,255,0.3), 0 0 30px rgba(59,130,246,0.3)",
-        "0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(59,130,246,0.5)",
-        "0 0 10px rgba(255,255,255,0.3), 0 0 30px rgba(59,130,246,0.3)"
-      ]
-    }}
-    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-  >
-    LUMEN
-  </motion.h1>
-  
-  {/* Light beam effect */}
-  <motion.div
-    className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400/40 to-transparent"
-    style={{ translateY: "-50%" }}
-    animate={{
-      opacity: [0.2, 0.6, 0.2],
-      width: ["100%", "130%", "100%"],
-      left: ["0%", "-15%", "0%"]
-    }}
-    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-  />
-  
-  {/* Decorative elements */}
-  <motion.div
-    className="absolute -bottom-1 left-1/2 w-16 h-0.5 bg-gradient-to-r from-blue-300/0 via-blue-300/80 to-blue-300/0"
-    style={{ translateX: "-50%" }}
-    animate={{ width: ["2rem", "4rem", "2rem"] }}
-    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-  />
-</motion.div>
+          <div className="relative flex items-center justify-center h-64 mb-12 overflow-hidden">
+      {/* Static background glow */}
+      <div className="absolute w-full h-full bg-blue-900/5 blur-3xl rounded-full transform scale-75" />
+      
+      {/* Main text with subtle animation */}
+      <motion.h1 
+        className="text-7xl font-light tracking-widest text-white relative z-10"
+        style={{ letterSpacing: "0.15em" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2 }}
+      >
+        LUMEN
+      </motion.h1>
+      
+      {/* Subtle underline */}
+      <motion.div
+        className="absolute bottom-12 left-1/2 h-px bg-blue-300/40 z-20"
+        style={{ translateX: "-50%" }}
+        initial={{ width: 0 }}
+        animate={{ width: "12rem" }}
+        transition={{ 
+          duration: 2,
+          delay: 0.5,
+          ease: "easeOut"
+        }}
+      />
+      
+      {/* Smooth, static light effect behind text */}
+      <div className="absolute top-1/2 left-1/2 w-64 h-12 bg-blue-400/10 blur-xl rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+      
+      {/* Very subtle pulsing light */}
+      <motion.div
+        className="absolute top-1/2 left-1/2 w-48 h-12 bg-blue-400/5 blur-xl rounded-full"
+        style={{ translateX: "-50%", translateY: "-50%" }}
+        animate={{ 
+          scale: [1, 1.05, 1],
+          opacity: [0.05, 0.08, 0.05]
+        }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          repeatType: "loop",
+          ease: "easeInOut"
+        }}
+      />
+    </div>
         </motion.div>
         
         {/* Enhanced AI Assistant Popup */}
