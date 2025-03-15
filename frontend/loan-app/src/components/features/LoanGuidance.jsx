@@ -1,16 +1,10 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate , Link} from "react-router-dom";
-// Import your existing ChatbotPage component
-import ChatbotPage from "./chatbot";
-
- // Update with your actual path
+import { motion } from "framer-motion";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function LoanOptionsPage() {
   const navigate = useNavigate();
   const [selectedLoan, setSelectedLoan] = useState(null);
-  // State to control chatbot visibility
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   
   const loanOptions = [
     {
@@ -85,11 +79,6 @@ export default function LoanOptionsPage() {
     if (selectedLoan) {
       navigate(`/Loan-Guidance/${selectedLoan}`);
     }
-  };
-
-  // Toggle chatbot visibility
-  const toggleChatbot = () => {
-    setIsChatbotOpen(!isChatbotOpen);
   };
 
   return (
@@ -245,31 +234,6 @@ export default function LoanOptionsPage() {
             </span>
           </motion.button>
         </motion.div>
-
-        {/* Chatbot Button */}
-        <motion.button
-          className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={toggleChatbot}
-        >
-          {isChatbotOpen ? "Close Chatbot" : "Chat with Us"}
-        </motion.button>
-
-        {/* Chatbot Component */}
-        <AnimatePresence>
-          {isChatbotOpen && (
-            <motion.div
-              className="fixed bottom-16 right-6 w-10 h-10 bg-white shadow-2xl rounded-lg overflow-hidden"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ChatbotPage />
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );

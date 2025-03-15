@@ -1,7 +1,7 @@
 import { useState,useRef,useEffect } from "react";
 
  
-export default function ChatBot() {
+export default function ChatBot({msg}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);

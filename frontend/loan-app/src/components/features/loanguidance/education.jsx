@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import Chatbot from './chatbot1';
+import Chatbot from '../../chatbot1';
 
 const EducationLoanStepsComponent = () => {
   const [activeStep, setActiveStep] = useState(0);
-
+const [msg,setmsg]=useState('');
   // Education loan details information
   const loanDetails = {
+    msg:"ntg",
     title: "Education Loans",
     description: "Invest in your future with our education loans designed to help students and parents finance higher education expenses with competitive rates and flexible repayment options.",
     features: [
@@ -139,7 +140,9 @@ const EducationLoanStepsComponent = () => {
               <h2 className="text-xl font-semibold mb-2">Features</h2>
               <ul className="list-disc pl-5 space-y-1">
                 {loanDetails.features.map((feature, index) => (
+                  
                   <li key={index}>{feature}</li>
+
                 ))}
               </ul>
             </div>

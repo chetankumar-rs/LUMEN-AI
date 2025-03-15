@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import Chatbot from '../../chatbot1';
 const HomeLoanStepsComponent = () => {
   const [activeStep, setActiveStep] = useState(0);
 
@@ -213,6 +213,7 @@ const HomeLoanStepsComponent = () => {
               >
                 {activeStep < applicationSteps.length - 1 ? 'Next Step' : 'Apply Now'}
               </button>
+              <Chatbot/>
             </div>
           </div>
         </div>
