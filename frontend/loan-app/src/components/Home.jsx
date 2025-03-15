@@ -10,6 +10,76 @@ export default function Home() {
       <FeaturesSection />
       <AboutSection />
       <Footer />
+      <ChatBot/>
+    </div>
+  );
+}
+
+function ChatBot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [prompt, setPrompt] = useState("");
+
+  const sendMessage = async () => {
+    if (!prompt.trim()) return;
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5005/api/generate/g", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await response.json();
+      const formattedResponse = formatResponse(data.text);
+
+      setMessages(prev => [...prev, { role: "user", content: prompt }, { role: "assistant", content: formattedResponse }]);
+      setPrompt("");
+    } catch (error) {
+      console.error("Chatbot Error:", error);
+      setMessages(prev => [...prev, { role: "assistant", content: "⚠️ Error fetching response" }]);
+    }
+
+    setLoading(false);
+  };
+
+  // ✅ Function to Format AI Response (Splitting "**" to Bold Key Points)
+  const formatResponse = (response) => {
+    return response.split("**").map((item, index) => (
+      index % 2 === 1 ? <strong key={index}>{item}</strong> : <span key={index}>{item}</span>
+    ));
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      <button onClick={() => setIsOpen(!isOpen)} className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700">
+        💬
+      </button>
+      {isOpen && (
+        <div className="bg-white p-4 shadow-lg rounded-md w-80 absolute bottom-12 right-0">
+          <div className="h-40 overflow-y-auto border p-2 rounded bg-gray-100 space-y-2">
+            {messages.map((msg, index) => (
+              <p key={index} className={`p-2 rounded ${msg.role === "assistant" ? "bg-blue-200" : "bg-gray-200"}`}>
+                {msg.content}
+              </p>
+            ))}
+          </div>
+          <div className="flex mt-2">
+            <input
+              type="text"
+              className="w-full border rounded p-2"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Ask me something..."
+            />
+            <button onClick={sendMessage} className="bg-green-500 text-white p-2 rounded ml-2" disabled={loading}>
+              {loading ? "..." : "Send"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
