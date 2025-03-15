@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect ,useRef} from "react";
 import { motion } from "framer-motion";
-
-export default function Home() {
+import Dashboard from "./dashboard";
+export default function Home({tog}) {
   return (
+    
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Navbar />
+      <Navbar tog={tog} />
       <HeroSection />
       <FeaturesSection />
       <AboutSection />
@@ -37,7 +38,7 @@ function ChatBot() {
     setLoading(true);
     
     try {
-      const response = await fetch("http://localhost:5005/api/generate/g", {
+      const response = await fetch("http://localhost:5011/api/generate/g", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt })
@@ -384,10 +385,14 @@ function ChatBot() {
 }
 
 
-
-function Navbar() {
+function Navbar({ tog }) {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+
+  function logout() {
+    localStorage.removeItem("token");
+    navigate("/login"); // Redirect to login after logout
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -403,45 +408,78 @@ function Navbar() {
   }, []);
 
   return (
-    <div className={`fixed top-0 w-full z-50 flex justify-between items-center p-4 transition-all duration-300 ease-in-out ${scrolled ? "bg-white text-blue-700 shadow-lg" : "bg-gradient-to-r from-blue-600 to-purple-700 text-white"}`}>
+    <div
+      className={`fixed top-0 w-full z-50 flex justify-between items-center p-4 transition-all duration-300 ease-in-out ${scrolled ? "bg-white text-blue-700 shadow-lg" : "bg-gradient-to-r from-blue-600 to-purple-700 text-white"}`}
+    >
       {/* Left Side: LUMEN Logo */}
       <div className="flex items-center space-x-2">
-        <div className="text-3xl font-extrabold tracking-wide animate-pulse cursor-pointer" onClick={() => navigate("/")}>
+        <div
+          className="text-3xl font-extrabold tracking-wide animate-pulse cursor-pointer"
+          onClick={() => navigate("/")}
+        >
           LUMEN
         </div>
-       
       </div>
-      
+
       {/* Middle: Navigation */}
-      <div className="hidden md:flex  transform translate-x-4 space-x-6">
-        <button className="text-blue-600 bg-white border rounded-full px-4 py-2 font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("features").scrollIntoView({ behavior: 'smooth' })}>
+      {tog?(<div>
+      <div className="hidden md:flex transform translate-x-4 space-x-6">
+        <button
+          className="text-blue-600 bg-white border rounded-full px-4 py-2 font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700"
+          onClick={() => document.getElementById("features").scrollIntoView({ behavior: "smooth" })}
+        >
           Features
         </button>
-        <button className="text-blue-600 bg-white px-4 py-2  border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() =>  navigate('/LoanCheckerfirst')}>
+        <button
+          className="text-blue-600 bg-white px-4 py-2 border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700"
+          onClick={() => navigate("/LoanCheckerfirst")}
+        >
           Loan Checker
         </button>
-        <button className="text-blue-600 bg-white px-4 py-2   border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() =>  navigate('/LoanGuidance')}>
-         Loan Guidance
+        <button
+          className="text-blue-600 bg-white px-4 py-2 border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700"
+          onClick={() => navigate("/LoanGuidance")}
+        >
+          Loan Guidance
         </button>
-        <button className="text-blue-600 bg-white px-4 py-2   border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700" onClick={() => document.getElementById("about").scrollIntoView({ behavior: 'smooth' })}>
+        <button
+          className="text-blue-600 bg-white px-4 py-2 border rounded-full font-semibold hover:scale-110 transition-transform duration-200 hover:text-white hover:bg-gradient-to-r from-blue-600 to-purple-700"
+          onClick={() => document.getElementById("about").scrollIntoView({ behavior: "smooth" })}
+        >
           About
         </button>
       </div>
+      </div>): null}
       
+
       {/* Right Side: Authentication Buttons */}
       <div className="flex space-x-2 md:space-x-4">
-        <button
-          className="bg-white text-blue-600 px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-md hover:bg-gradient-to-r from-blue-600 to-purple-700 hover:text-white hover:scale-110 transition-transform duration-200"
-          onClick={() => navigate("/signup")}
-        >
-          Sign Up
-        </button>
-        <button
-          className="bg-white text-blue-600 px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-md hover:bg-gradient-to-r from-blue-600 to-purple-700 hover:text-white hover:scale-110 transition-transform duration-200"
-          onClick={() => navigate("/login")}
-        >
-          Sign In
-        </button>
+        {tog ? (
+           <>
+           <div className='text-blue-600' >
+            <Dashboard/>
+            
+           
+           </div>
+           
+           </>
+          
+        ) : (
+          <>
+            <button
+              className="bg-white text-blue-600 px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-md hover:bg-gradient-to-r from-blue-600 to-purple-700 hover:text-white hover:scale-110 transition-transform duration-200"
+              onClick={() => navigate("/signup")}
+            >
+              Sign Up
+            </button>
+            <button
+              className="bg-white text-blue-600 px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-md hover:bg-gradient-to-r from-blue-600 to-purple-700 hover:text-white hover:scale-110 transition-transform duration-200"
+              onClick={() => navigate("/login")}
+            >
+              Sign In
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

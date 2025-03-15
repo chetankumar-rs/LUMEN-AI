@@ -14,14 +14,14 @@ import HomeLoanStepsComponent from './components/features/loanguidance/homeloan'
 import EducationLoanStepsComponent from './components/features/loanguidance/education'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tog, setTog] = useState("")
 
   return (
     <><div className='bg-blue-200'>
        <Routes>
        <Route path='/' element={<Welcome/>}/>
-        <Route path='/login' element={<Login/>}/>
-        <Route path='/home' element={<Home/>}/>
+        <Route path='/login' element={<Login setTog={setTog}/>}/>
+        <Route path='/home' element={<Home tog={tog}/>}/>
         <Route path='/signup' element={<Signup/>}/>
         <Route path='/LoanChecker' element={<LoanChecker/>}/>
         <Route path='/LoanGuidance' element={<LoanGuidance/>}/>
