@@ -7,6 +7,7 @@ import Signup from './components/signup'
 import LoanChecker from './components/features/LoanChecker'
 import Welcome from './components/welcome'
 import LoanGuidance from './components/features/LoanGuidance'
+import LoanCheckerSection from './components/features/Loancheckerfirst'
 function App() {
   const [count, setCount] = useState(0)
 
@@ -19,6 +20,7 @@ function App() {
         <Route path='/signup' element={<Signup/>}/>
         <Route path='/LoanChecker' element={<LoanChecker/>}/>
         <Route path='/LoanGuidance' element={<LoanGuidance/>}/>
+        <Route path='/LoanCheckerFirst' element={<LoanCheckerSection/>}/>
        </Routes>
     </div>
        
