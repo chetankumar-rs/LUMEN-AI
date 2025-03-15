@@ -8,6 +8,11 @@ import LoanChecker from './components/features/LoanChecker'
 import Welcome from './components/welcome'
 import LoanGuidance from './components/features/LoanGuidance'
 import LoanCheckerSection from './components/features/Loancheckerfirst'
+import PersonalLoanStepsComponent from './components/features/loanguidance/personal'
+import Business from './components/features/loanguidance/business' 
+import HomeLoanStepsComponent from './components/features/loanguidance/homeloan' 
+import EducationLoanStepsComponent from './components/features/loanguidance/education'
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -21,6 +26,11 @@ function App() {
         <Route path='/LoanChecker' element={<LoanChecker/>}/>
         <Route path='/LoanGuidance' element={<LoanGuidance/>}/>
         <Route path='/LoanCheckerFirst' element={<LoanCheckerSection/>}/>
+        <Route path='/Loan-Guidance/Personal' element={<PersonalLoanStepsComponent/>}/>
+        <Route path='/Loan-Guidance/Business' element={<Business/>}/>
+        <Route path='/Loan-Guidance/HomeLoan' element={<HomeLoanStepsComponent/>}/>
+        <Route path='/Loan-Guidance/Education' element={<EducationLoanStepsComponent/>}/>
+        
        </Routes>
     </div>
        

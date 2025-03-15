@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , Link} from "react-router-dom";
 // Import your existing ChatbotPage component
 import ChatbotPage from "./chatbot";
 
@@ -26,7 +26,7 @@ export default function LoanOptionsPage() {
       benefits: ["Flexible use of funds", "No collateral required", "Quick approval", "Fixed interest rates"]
     },
     {
-      id: "home",
+      id: "HomeLoan",
       title: "Home Loan",
       description: "Finance your dream home with competitive rates and flexible repayment terms.",
       icon: (
@@ -83,7 +83,7 @@ export default function LoanOptionsPage() {
 
   const handleContinue = () => {
     if (selectedLoan) {
-      navigate(`/loan-application/${selectedLoan}`);
+      navigate(`/Loan-Guidance/${selectedLoan}`);
     }
   };
 
