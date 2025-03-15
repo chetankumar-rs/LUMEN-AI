@@ -184,54 +184,201 @@ function ChatBot() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <button onClick={() => setIsOpen(!isOpen)} className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700">
-        💬
+    <div className="fixed bottom-4 right-4 z-50 font-sans">
+      {/* Chat toggle button */}
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className={`bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center ${isOpen ? 'rotate-90 transform' : ''}`}
+        aria-label="Toggle chat"
+      >
+        {isOpen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        )}
       </button>
+      
+      {/* Chat panel */}
       {isOpen && (
-        <div className="bg-white p-4 shadow-lg rounded-md w-80 absolute bottom-12 right-0">
-          <div className="h-60 overflow-y-auto border p-2 rounded bg-gray-100 space-y-2">
-            {messages.map((msg, index) => (
-              <div key={index} className={`p-2 rounded ${msg.role === "assistant" ? "bg-blue-200" : "bg-gray-200"}`}>
-                <p>{msg.content}</p>
-                {msg.role === "assistant" && msg.speechData && (
-                  <button 
-                    onClick={() => playAudio(msg.speechData, index)} 
-                    disabled={isSpeaking}
-                    className="mt-1 bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded"
-                  >
-                    {isSpeaking && currentPlayingIndex === index ? "Playing..." : "🔊 Listen"}
-                  </button>
-                )}
+        <div 
+          className="bg-white rounded-2xl shadow-2xl w-80 md:w-96 absolute bottom-16 right-0 overflow-hidden transition-all duration-300 transform"
+          style={{
+            animation: 'fadeInUp 0.3s ease-out',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          }}
+        >
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
+              <h3 className="font-medium">Chat Assistant</h3>
+            </div>
+            <div className="flex space-x-2">
+              <button className="hover:bg-blue-600 p-1 rounded transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="19" cy="12" r="1"></circle>
+                  <circle cx="5" cy="12" r="1"></circle>
+                </svg>
+              </button>
+            </div>
           </div>
-          <div className="flex mt-2">
-            <input
-              type="text"
-              className="w-full border rounded p-2"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Ask me something..."
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            />
-            <button onClick={sendMessage} className="bg-green-500 text-white p-2 rounded ml-2" disabled={loading}>
-              {loading ? "..." : "Send"}
-            </button>
+          
+          {/* Messages area */}
+          <div className="h-80 overflow-y-auto p-4 bg-gray-50">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-500 space-y-3">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </div>
+                <p className="text-center">Start a conversation!</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((msg, index) => (
+                  <div 
+                    key={index} 
+                    className={`flex ${msg.role === "assistant" ? "justify-start" : "justify-end"}`}
+                    style={{
+                      animation: 'fadeIn 0.3s ease-out',
+                      animationDelay: `${index * 0.1}s`,
+                    }}
+                  >
+                    <div 
+                      className={`max-w-3/4 rounded-2xl p-3 ${
+                        msg.role === "assistant" 
+                          ? "bg-white border border-gray-200 rounded-tl-none text-gray-800" 
+                          : "bg-blue-500 text-white rounded-tr-none"
+                      }`}
+                    >
+                      <p className="text-sm leading-relaxed">{msg.content}</p>
+                      
+                      {msg.role === "assistant" && msg.speechData && (
+                        <button
+                          onClick={() => playAudio(msg.speechData, index)}
+                          disabled={isSpeaking}
+                          className={`mt-2 ${
+                            isSpeaking && currentPlayingIndex === index 
+                              ? "bg-blue-100 text-blue-600 border border-blue-200" 
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+                          } text-xs px-3 py-1 rounded-full transition-all duration-200 flex items-center space-x-1`}
+                        >
+                          {isSpeaking && currentPlayingIndex === index ? (
+                            <>
+                              <span className="flex space-x-1 items-center">
+                                <span className="w-1.5 h-3 bg-blue-600 rounded-full animate-pulse" style={{animationDelay: '0s'}}></span>
+                                <span className="w-1.5 h-4 bg-blue-600 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></span>
+                                <span className="w-1.5 h-2 bg-blue-600 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></span>
+                                <span className="ml-1">Playing</span>
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                              </svg>
+                              <span className="ml-1">Listen</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
           </div>
-          <audio 
-            ref={audioRef} 
-            onEnded={handleAudioEnded} 
+          
+          {/* Input area */}
+          <div className="p-4 border-t">
+            <form 
+              className="flex items-center space-x-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                sendMessage();
+              }}
+            >
+              <input
+                type="text"
+                className="flex-1 border border-gray-300 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Type your message..."
+                disabled={loading}
+              />
+              <button 
+                type="submit"
+                className={`${
+                  loading || !prompt.trim() 
+                    ? "bg-gray-300 cursor-not-allowed" 
+                    : "bg-blue-500 hover:bg-blue-600"
+                } text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors duration-200`} 
+                disabled={loading || !prompt.trim()}
+              >
+                {loading ? (
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                )}
+              </button>
+            </form>
+          </div>
+          
+          <audio
+            ref={audioRef}
+            onEnded={handleAudioEnded}
             onError={(e) => {
               console.error("Audio error:", e);
               setIsSpeaking(false);
               setCurrentPlayingIndex(null);
             }}
-            style={{ display: 'none' }} 
+            style={{ display: 'none' }}
           />
         </div>
       )}
+      
+      {/* Add keyframe animations */}
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }

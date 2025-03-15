@@ -35,7 +35,7 @@ async function textToSpeech(text) {
       data: {
         "inputs": [text],
         "target_language_code": "en-IN",
-        "speaker": "meera",
+        "speaker": "arvind",
         "pitch": 0,
         "pace": 1.0,
         "loudness": 1.0,
