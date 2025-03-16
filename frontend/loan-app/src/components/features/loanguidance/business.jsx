@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Chatbot from '../../chatbot1';
+import { Building, Award, DollarSign, BarChart, Users, FileText, CheckSquare, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+
 const BusinessLoanStepsComponent = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Animation effect on component mount
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   // Business loan details information
   const loanDetails = {
@@ -27,11 +35,12 @@ const BusinessLoanStepsComponent = () => {
     ]
   };
 
-  // Application steps
+  // Application steps with added icons
   const applicationSteps = [
     {
       title: "Step 1: Business Profile",
       description: "Provide basic information about your business to help us understand your needs.",
+      icon: <Building size={24} />,
       requirements: [
         "Legal business name and DBA (if applicable)",
         "Business address and contact information",
@@ -45,6 +54,7 @@ const BusinessLoanStepsComponent = () => {
     {
       title: "Step 2: Ownership Information",
       description: "Provide details about the business owners and their stake in the company.",
+      icon: <Users size={24} />,
       requirements: [
         "Owner name(s) and contact information",
         "Ownership percentage",
@@ -58,6 +68,7 @@ const BusinessLoanStepsComponent = () => {
     {
       title: "Step 3: Loan Request Details",
       description: "Specify your financing needs and how you plan to use the funds.",
+      icon: <DollarSign size={24} />,
       requirements: [
         "Loan amount requested",
         "Loan purpose (expansion, equipment, working capital, etc.)",
@@ -70,6 +81,7 @@ const BusinessLoanStepsComponent = () => {
     {
       title: "Step 4: Business Financial Information",
       description: "Share your business's financial performance and current obligations.",
+      icon: <BarChart size={24} />,
       requirements: [
         "Annual revenue (past 2-3 years)",
         "Monthly average sales",
@@ -84,6 +96,7 @@ const BusinessLoanStepsComponent = () => {
     {
       title: "Step 5: Additional Business Documents",
       description: "Upload supporting business documents to strengthen your application.",
+      icon: <FileText size={24} />,
       requirements: [
         "Business licenses and permits",
         "Articles of incorporation or organization",
@@ -97,6 +110,7 @@ const BusinessLoanStepsComponent = () => {
     {
       title: "Step 6: Personal Financial Information",
       description: "Provide information about the personal finances of primary business owners.",
+      icon: <Users size={24} />,
       requirements: [
         "Personal tax returns (past 2 years) for each owner",
         "Personal financial statement",
@@ -108,6 +122,7 @@ const BusinessLoanStepsComponent = () => {
     {
       title: "Step 7: Review & Submit",
       description: "Review all information and submit your application for underwriting.",
+      icon: <CheckSquare size={24} />,
       requirements: [
         "Verify all business and personal information",
         "Review loan terms and conditions",
@@ -123,94 +138,138 @@ const BusinessLoanStepsComponent = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-        {/* Loan Details Section */}
-        <div className="bg-indigo-700 text-white p-6">
-          <h1 className="text-3xl font-bold mb-3">{loanDetails.title}</h1>
-          <p className="mb-4">{loanDetails.description}</p>
+    <div className={`max-w-4xl mx-auto p-4 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      <div className="bg-white shadow-xl rounded-lg overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
+        {/* Loan Details Section with Gradient Background - Using mix of orange, blue and purple */}
+        <div className="bg-gradient-to-r from-orange-500 via-blue-600 to-purple-600 text-white p-8 relative overflow-hidden">
+          {/* Animated background elements */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+            <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-white animate-pulse"></div>
+            <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-white animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-40 right-40 w-24 h-24 rounded-full bg-white animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+          </div>
           
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Features</h2>
-              <ul className="list-disc pl-5 space-y-1">
-                {loanDetails.features.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
+          <div className="relative z-10">
+            <div className="flex items-center mb-4">
+              <Award size={32} className="mr-3 animate-bounce" style={{ animationDuration: '3s' }} />
+              <h1 className="text-4xl font-bold">{loanDetails.title}</h1>
             </div>
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Eligibility</h2>
-              <ul className="list-disc pl-5 space-y-1">
-                {loanDetails.eligibility.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
+            <p className="mb-6 text-lg">{loanDetails.description}</p>
+            
+            <div className="grid md:grid-cols-2 gap-10">
+              <div className="transform transition-all duration-300 hover:scale-105">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center">
+                  <Check size={20} className="mr-2" /> Features
+                </h2>
+                <ul className="space-y-2">
+                  {loanDetails.features.map((feature, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="inline-block w-4 h-4 mr-2 mt-1 bg-white rounded-full"></span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="transform transition-all duration-300 hover:scale-105">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center">
+                  <Check size={20} className="mr-2" /> Eligibility
+                </h2>
+                <ul className="space-y-2">
+                  {loanDetails.eligibility.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="inline-block w-4 h-4 mr-2 mt-1 bg-white rounded-full"></span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
         
         {/* Application Steps Section */}
-        <div className="p-6">
-          <h2 className="text-2xl font-bold mb-6">Application Process</h2>
+        <div className="p-8 bg-gradient-to-b from-gray-50 to-white">
+          <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">Application Process</h2>
           
-          {/* Steps progress indicators */}
-          <div className="overflow-x-auto mb-8">
-            <div className="flex items-center min-w-max mb-2">
+          {/* Steps progress indicators with animations */}
+          <div className="overflow-x-auto mb-10">
+            <div className="flex justify-center min-w-max mb-6">
               {applicationSteps.map((step, index) => (
                 <div 
                   key={index} 
-                  className="flex flex-col items-center cursor-pointer mx-2"
+                  className={`flex flex-col items-center cursor-pointer mx-3 transition-all duration-300 ${
+                    index === activeStep ? 'transform scale-110' : 'opacity-70'
+                  }`}
                   onClick={() => handleStepClick(index)}
                 >
-                  <div className={`w-10 h-10 flex items-center justify-center rounded-full ${
-                    index === activeStep ? 'bg-indigo-700 text-white' : 
-                    index < activeStep ? 'bg-indigo-500 text-white' : 'bg-gray-300'
+                  <div className={`w-14 h-14 flex items-center justify-center rounded-full shadow-md transition-all duration-500 ${
+                    index === activeStep ? 'bg-gradient-to-r from-orange-500 via-blue-600 to-purple-600 text-white scale-110 animate-pulse' : 
+                    index < activeStep ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' : 'bg-gray-200 text-gray-600'
                   }`}>
-                    {index + 1}
+                    {index < activeStep ? <Check size={24} /> : index + 1}
                   </div>
-                  <span className="text-xs mt-1 text-center">{step.title.split(':')[0]}</span>
+                  <div className="mt-2 text-center">
+                    <span className={`text-xs font-medium ${index === activeStep ? 'text-blue-700' : 'text-gray-600'}`}>
+                      {step.title.split(':')[0]}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+            <div className="relative h-2 mb-8 rounded-full bg-gray-200 overflow-hidden">
               <div 
-                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-700" 
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-500 via-blue-600 to-purple-600 transition-all duration-500 ease-in-out"
                 style={{ width: `${((activeStep + 1) / applicationSteps.length) * 100}%` }}
               ></div>
             </div>
           </div>
           
-          {/* Active step details */}
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-3">{applicationSteps[activeStep].title}</h3>
-            <p className="text-gray-600 mb-4">{applicationSteps[activeStep].description}</p>
+          {/* Active step details with card effect */}
+          <div className="bg-white p-8 rounded-xl shadow-lg transform transition-all duration-500 hover:shadow-xl border border-gray-100">
+            <div className="flex items-center mb-6">
+              <div className="p-3 bg-gradient-to-r from-orange-500 via-blue-600 to-purple-600 text-white rounded-lg mr-4">
+                {applicationSteps[activeStep].icon}
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-800">{applicationSteps[activeStep].title}</h3>
+                <p className="text-gray-600">{applicationSteps[activeStep].description}</p>
+              </div>
+            </div>
             
-            <div className="mt-4">
-              <h4 className="font-medium text-gray-800 mb-2">Requirements:</h4>
-              <ul className="list-disc pl-5 space-y-1 text-gray-700">
+            <div className="mt-6 bg-gray-50 p-6 rounded-lg">
+              <h4 className="font-semibold text-lg text-gray-800 mb-4">Requirements:</h4>
+              <ul className="space-y-3 text-gray-700">
                 {applicationSteps[activeStep].requirements.map((req, index) => (
-                  <li key={index}>{req}</li>
+                  <li key={index} className="flex items-start">
+                    <div className="flex-shrink-0 w-5 h-5 mt-1 mr-3 bg-gradient-to-r from-orange-500 via-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-xs">
+                      {index + 1}
+                    </div>
+                    <span>{req}</span>
+                  </li>
                 ))}
               </ul>
             </div>
             
-            <div className="flex justify-between mt-8">
+            <div className="flex justify-between mt-10 items-center">
               <button
-                className={`px-4 py-2 rounded font-medium ${
-                  activeStep > 0 ? 'bg-gray-300 hover:bg-gray-400 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                className={`px-6 py-3 rounded-lg font-medium flex items-center transition-all duration-300 ${
+                  activeStep > 0 ? 'bg-gray-200 hover:bg-gray-300 text-gray-800 transform hover:-translate-x-1' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
                 onClick={() => activeStep > 0 && setActiveStep(activeStep - 1)}
                 disabled={activeStep === 0}
               >
-                Previous Step
+                <ChevronLeft size={18} className="mr-1" /> Previous
               </button>
               
+              <div className="text-sm text-gray-500">
+                Step {activeStep + 1} of {applicationSteps.length}
+              </div>
+              
               <button
-                className={`px-4 py-2 rounded font-medium ${
+                className={`px-6 py-3 rounded-lg font-medium flex items-center transition-all duration-300 transform hover:translate-x-1 ${
                   activeStep < applicationSteps.length - 1 
-                    ? 'bg-indigo-700 hover:bg-indigo-800 text-white' 
-                    : 'bg-green-600 hover:bg-green-700 text-white'
+                    ? 'bg-gradient-to-r from-orange-500 via-blue-600 to-purple-600 hover:from-orange-600 hover:via-blue-700 hover:to-purple-700 text-white shadow-md' 
+                    : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md'
                 }`}
                 onClick={() => {
                   if (activeStep < applicationSteps.length - 1) {
@@ -220,10 +279,18 @@ const BusinessLoanStepsComponent = () => {
                   }
                 }}
               >
-                {activeStep < applicationSteps.length - 1 ? 'Next Step' : 'Apply Now'}
+                {activeStep < applicationSteps.length - 1 ? (
+                  <>Next <ChevronRight size={18} className="ml-1" /></>
+                ) : (
+                  <>Apply Now <Check size={18} className="ml-1" /></>
+                )}
               </button>
-              <Chatbot/>
             </div>
+          </div>
+          
+          {/* Chatbot position fixed at bottom right */}
+          <div className="fixed bottom-6 right-6 z-50 animate-bounce" style={{ animationDuration: '2s' }}>
+            <Chatbot />
           </div>
         </div>
       </div>
