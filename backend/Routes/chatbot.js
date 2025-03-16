@@ -37,6 +37,8 @@ async function textToSpeech(text) {
       return { error: 'API key is missing' };
     }
     
+
+     const lang="kn-IN"||"hi-IN"||"te-IN"||"ta-IN"||"bn-IN"||"ml-IN";
     const response = await axios({
       method: 'POST',
       url: 'https://api.sarvam.ai/text-to-speech',
@@ -46,7 +48,7 @@ async function textToSpeech(text) {
       },
       data: {
         "inputs": [text],
-        "target_language_code": "te-IN",
+        "target_language_code": lang,
         "speaker": "arvind",
         "pitch": 0,
         "pace": 1.0,
