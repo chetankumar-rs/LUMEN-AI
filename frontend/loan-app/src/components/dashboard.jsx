@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Dashboard() {
+export default function Dashboard({tog}) {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -13,7 +13,12 @@ export default function Dashboard() {
           isSidebarOpen ? "translate-x-0" : "-translate-x-64"
         } transition-transform duration-300 ease-in-out`}
       >
-        <div className="p-4 border-b text-lg font-semibold">Dashboard</div>
+        {tog?(<>
+          <div className="p-4 border-b text-lg font-semibold">Welcome</div>
+        </>):(<>
+        
+          <div className="p-4 border-b text-lg font-semibold">Dashboard</div>
+        </>)}
         <nav className="p-4 space-y-2">
           <button onClick={() => setIsSidebarOpen(false)} className="w-full text-left p-2 hover:bg-gray-200">
             Overview

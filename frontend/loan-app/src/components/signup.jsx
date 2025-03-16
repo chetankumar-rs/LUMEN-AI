@@ -19,7 +19,7 @@ export default function Signup() {
     setIsLoading(true);
     
     try {
-      const response = await axios.post("http://localhost:6005/api/auth/register", {
+      const response = await axios.post("http://localhost:6013/api/auth/register", {
         name,
         email,
         password

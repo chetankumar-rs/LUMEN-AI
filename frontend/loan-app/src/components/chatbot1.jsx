@@ -95,6 +95,20 @@ export default function ChatBot({ msg }) {
     };
   };
 
+  const handleSpeechToText = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = selectedLanguage;
+    recognition.start();
+
+    recognition.onresult = (event) => {
+      setPrompt(event.results[0][0].transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+    };
+  };
+
   return (
     <div className="fixed bottom-4 right-4 z-50 font-sans">
       <button onClick={() => setIsOpen(!isOpen)} className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-transform transform hover:scale-105">
@@ -122,6 +136,7 @@ export default function ChatBot({ msg }) {
           </div>
           <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="mt-4 flex">
             <input type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Type your message..." className="border p-2 flex-1 rounded-l-md" />
+            <button type="button" onClick={handleSpeechToText} className="bg-gray-500 text-white p-2">🎤</button>
             <button type="submit" disabled={loading} className="bg-blue-500 text-white p-2 rounded-r-md">Send</button>
           </form>
           <audio ref={audioRef} style={{ display: 'none' }} />

@@ -92,7 +92,7 @@ function Navbar({ tog }) {
         {tog ? (
            <>
            <div className='text-blue-600' >
-            <Dashboard/>
+            <Dashboard tog={tog}/>
             
            
            </div>
