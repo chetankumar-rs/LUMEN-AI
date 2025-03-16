@@ -30,7 +30,7 @@ export default function Login({setTog}) {
 
       setTimeout(() => {
         setTog(response.data.token)
-        navigate("/");
+        navigate("/home");
       }, 1500);
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials");
