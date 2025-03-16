@@ -1,11 +1,11 @@
 // Backend: routes/generate.js
 require('dotenv').config();
 const express = require('express');
-const axios = require('axios');
+ 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs'); // Keep for potential debugging
 const mongoose = require('mongoose'); // Add Mongoose for MongoDB
-
+const axios = require('axios');
 const router = express.Router();
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -46,7 +46,7 @@ async function textToSpeech(text) {
       },
       data: {
         "inputs": [text],
-        "target_language_code": "en-IN",
+        "target_language_code": "te-IN",
         "speaker": "arvind",
         "pitch": 0,
         "pace": 1.0,
@@ -199,5 +199,43 @@ router.post('/g', async (req, res) => {
     });
   }
 });
+
+
+router.post('/translate', async (req, res) => {
+  try {
+    const response = await axios({
+      method: 'POST',
+      url: 'https://api.sarvam.ai/translate',
+      headers: {
+        'api-subscription-key': process.env.SARVAM_API_KEY,
+        'Content-Type': 'application/json'},
+      data: {
+        "input": req.body.input || "hello world",
+        "source_language_code": req.body.source_language_code || "en-IN",
+        "target_language_code": req.body.target_language_code || "kn-IN",
+        "speaker_gender": req.body.speaker_gender || "Female",
+        "mode": req.body.mode || "formal",
+        "model": req.body.model || "mayura:v1",
+        "enable_preprocessing": req.body.enable_preprocessing !== undefined ? req.body.enable_preprocessing : false,
+        "output_script": req.body.output_script || "roman",
+        "numerals_format": req.body.numerals_format || "international"
+      }
+    });
+
+    // Return the response data from Sarvam API
+    return res.status(200).json(response.data);
+  } catch (error) {
+    console.error('Translation error:', error.message);
+    
+    // Pass through error from the Sarvam API or create generic error
+    const statusCode = error.response?.status || 500;
+    const errorMessage = error.response?.data || { error: 'Failed to process translation request' };
+    
+    return res.status(statusCode).json(errorMessage);
+  }
+});
+
+
+
 
 module.exports = router;

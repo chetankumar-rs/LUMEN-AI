@@ -18,10 +18,10 @@ app.use('/api/generate',chatbotRouter);
 
 
 app.get('/', (req, res) => {
-    res.json({ result: "hi there" });
+    res.json({ result: "my name is bharath what can i do for you" });
 });
 
-const PORT = process.env.PORT || 6005;   
+const PORT = process.env.PORT || 6013;   
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
